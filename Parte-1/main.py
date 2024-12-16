@@ -59,24 +59,32 @@ class CSP:
                     tareas_std -= 1
         return (tareas_spc + tareas_std == 0)
 
-    def funcion_huecos_vacios(self, *res):
-        # Res es el valor de restriccion, que es una lista con un puntero y el valor de las variables
-        for i, valor in enumerate(res):
-            print(i, valor, res[i-1], res[i])
-            if valor in self.PRK + self.STD + self.SPC:
-                #comprobación en los talleres y parking en horizontal
-                if (i > 0 and res[i-1] in self.PRK + self.STD + self.SPC) or (i < len(res)-1 and res[i+1] in self.PRK + self.STD + self.SPC):
-                    print('ok', res[i-1])
-                    return False
-
-                #comprobación en los talleres y parking en vertical    
-                '''''fila_actual = int(valor[0][0])
-                columna_actual = int(valor[0][1])
-                if (fila_actual > 0 and any(res[j][0][0] == str(fila_actual - 1) and res[j][0][1] == columna_actual for j in range(len(res)))) or \
-                (fila_actual < self.dimensiones[0] - 1 and any(res[j][0][0] == str(fila_actual + 1) and res[j][0][1] == columna_actual for j in range(len(res)))):
-                    return False'''
+    def funcion_huecos_vacios(*res):
+        #Guardamos todas las coordenadas ocupadas en una lista dentro de cada franja
+        for valor in res:
+            print(valor)
+        coordenadas_ocupadas = [(valor[0]) for valor in res]
+        #Por cada epacio ocupado comprobamos los espacios adyacentes
+        for fila, columna in coordenadas_ocupadas:
+            adyacentes = [
+                (fila - 1, columna), 
+                (fila + 1, columna),  
+                (fila, columna - 1), 
+                (fila, columna + 1)  
+            ]
+            #Comprobamos que la menos un vecino no esté ocupado
+            if not any((adyacente not in coordenadas_ocupadas) for adyacente in adyacentes):
+                return False
+        
         return True
 
+    def no_JMB_adyacentes(self, variables):
+        for variable in variables:
+            if variable[1] != "PRK":
+                for otra_variable in variables:
+                    if otra_variable[1] != "PRK" and abs(variable[0][0]-otra_variable[0][0])+abs(variable[0][1]-otra_variable[0][1]) < 2:
+                        return False
+        return True
 
     def add_restrictions(self):
         variables_por_franja = []
@@ -109,23 +117,14 @@ class CSP:
         # vacíos al menos uno de los parkings o talleres de los adyacente vertical u horizontalmente
         # for franja in variables_por_franja:
         #     self.problema.addConstraint(self.funcion_huecos_vacios, franja)
-        ''' 
-        for avion1 in self.aviones:
-            for avion2 in self.aviones:
-                for avion3 in self.aviones:
-                    problema.addConstraint(lambda a, b, c: laterales(a, b, c, dimensiones), (avion1, avion2, avion3))
-        
-        
-
-        '''
 
         # No puede haber dos talleres adyacentes con avión JMB
-        # for franja in variables_por_franja:
-        #     aviones_JMB = []
-        #     for variable in franja:
-        #         if variable[0][1] == "JMB":
-        #             aviones_JMB.append(variable)
-        #     self.problema.addConstraint(lambda a,b: )
+        for franja in variables_por_franja:
+            for variable in franja:
+                if variable[0][1] == "JMB" and variable[1] != "PRK":
+                    for otra_variable in franja:
+                        if otra_variable[0][1] == "JMB" and otra_variable[1] != "PRK" and variable != otra_variable:
+                            self.problema.addConstraint(lambda a,b: abs(a[0][0]-b[0][0])+abs(a[0][1]-b[0][1]) > 1, (variable, otra_variable))
 
     def realizar_problema(self):
         self.add_variables()
@@ -161,6 +160,9 @@ def main():
     franjas, dimensiones, STD, SPC, PRK, aviones = leer_archivo(sys.argv[1])
     csp = CSP(franjas, dimensiones, STD, SPC, PRK, aviones)
     solucion = csp.realizar_problema()
+    if not solucion:
+        print("No hay ninguna solucion")
+        return 0
     for llave in solucion:
         print(llave, solucion[llave])
 
