@@ -20,6 +20,19 @@ class CSP:
                 self.problema.addVariable(variable, self.PRK+self.STD+self.SPC)
                 self.variables.append(variable)
 
+    def hasta_dos_aviones_en_taller(*res):
+        # Comprobar que ningún taller atiende a más de dos aviones
+        repeticiones = {}
+        for valor in res[1:]:
+            if valor not in repeticiones:
+                repeticiones[valor] = 1
+            else:
+                repeticiones[valor] += 1
+        for entrada in repeticiones:
+            if repeticiones[entrada] > 2 and entrada[1] != "PRK":
+                return False
+        return True
+
     def no_dos_JMB_en_taller(*res):
         # Res es el valor de restriccion, que es una lista con tres valores: puntero, valor de variable1, valor de variable2
         if res[1][1] != "PRK" and res[2][1] != "PRK":
@@ -36,6 +49,7 @@ class CSP:
         # No puede haber más de dos aviones en un taller
         for franja in variables_por_franja:
             aviones_JMB = []
+            self.problema.addConstraint(self.hasta_dos_aviones_en_taller, franja)
             for variable in franja:
                 if variable[0][1] == "JMB":
                     aviones_JMB.append(variable)
