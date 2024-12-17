@@ -71,20 +71,26 @@ class ASTAR:
         # Calcular matriz h
         matriz_h = self.calcular_valores(self.final)
         # Calcular matriz f
-        print(matriz_g)
-        print(matriz_h)
         matriz_f = []
         for fila in range(self.dimensiones[0]):
             matriz_f.append([])
             for columna in range(self.dimensiones[1]):
                 matriz_f[fila].append(matriz_g[fila][columna] + matriz_h[fila][columna])
-        print(matriz_f)
+        for ady in self.adyacentes(self.inicio):
+            if matriz_f[ady[0]][ady[1]] == matriz_f[self.inicio[0]][self.inicio[1]]:
+                return ady
+        return -1
 
 
 def realizar_problema(aviones, matriz):
-    for avion in aviones:
-        algoritmo = ASTAR(avion[0], avion[1], matriz)
-        algoritmo.ejecutar_algoritmo()
+    # for avion in aviones:
+    #     while avion[0] != avion[1]:
+            for avion in aviones:
+                astar = ASTAR(avion[0], avion[1], matriz)
+                siguiente_movimiento = astar.ejecutar_algoritmo()
+                print(siguiente_movimiento)
+
+        
 
 def main():
     aviones, matriz = leer_archivo(sys.argv[1])
