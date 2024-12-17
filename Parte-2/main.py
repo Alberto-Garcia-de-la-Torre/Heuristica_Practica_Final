@@ -1,4 +1,5 @@
 import sys
+import copy
 
 
 def leer_archivo(path):
@@ -21,9 +22,6 @@ class ASTAR:
         self.inicio = inicio
         self.final = final
         self.matriz_original = matriz
-        self.g = matriz
-        self.h = matriz
-        self.f = matriz
         self.dimensiones = [len(matriz), len(matriz[0])]
 
     def resetear_matriz(self, matriz):
@@ -39,15 +37,9 @@ class ASTAR:
     def in_matriz(self, pos):
         return pos[0] < self.dimensiones[0] and pos[1] < self.dimensiones[1] and pos[0] >= 0 and pos[1] >= 0
     
-    def calcular_valores(self, inicio, tipo):
+    def calcular_valores(self, inicio):
         # -------------------------------------------------------------------------------- Cambiar para cuando acepte casillas amarillas
-        # Escoger matriz a cambiar
-        if tipo == "g":
-            matriz = self.resetear_matriz(self.g)
-        elif tipo == "h":
-            matriz = self.resetear_matriz(self.h)
-        elif tipo == "f":
-            matriz = self.resetear_matriz(self.f)
+        matriz = self.resetear_matriz(copy.deepcopy(self.matriz_original))
         # Resetear valor inicial
         matriz[inicio[0]][inicio[1]] = 0
         # Calcular adyacentes
@@ -57,6 +49,7 @@ class ASTAR:
             if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G":
                 futuras_posiciones.append(ady)
         self._calcular_valores(futuras_posiciones, matriz, coste)
+        return matriz
 
     
     def _calcular_valores(self, posiciones, matriz, coste):
@@ -74,7 +67,19 @@ class ASTAR:
     
     def ejecutar_algoritmo(self):
         # Calcular matriz g
-        self.calcular_valores(self.inicio, "g")
+        matriz_g = self.calcular_valores(self.inicio)
+        # Calcular matriz h
+        matriz_h = self.calcular_valores(self.final)
+        # Calcular matriz f
+        print(matriz_g)
+        print(matriz_h)
+        matriz_f = []
+        for fila in range(self.dimensiones[0]):
+            matriz_f.append([])
+            for columna in range(self.dimensiones[1]):
+                matriz_f[fila].append(matriz_g[fila][columna] + matriz_h[fila][columna])
+        print(matriz_f)
+
 
 def realizar_problema(aviones, matriz):
     for avion in aviones:
