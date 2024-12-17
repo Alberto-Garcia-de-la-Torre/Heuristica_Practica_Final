@@ -1,0 +1,14 @@
+test0: 
+Ejemplo del enunciado con la posición arreglada. Este ejemplo es tan grande que nunca termina de cargar todas las soluciones
+
+test1:
+Problema simplificado con matriz 3x3 y dos aviones Jumbo. 201334 soluciones
+
+test2:
+Matriz 2x2 y dos aviones Jumbo. 48 soluciones. Como no pueden estar adyacentes, tiene sentido que ocupen siempre casillas diagonales entre sí.
+
+test3:
+Igual que test2, pero con un avión teniendo que realizar 4 mantenimientos. Como solo hay 3 franjas horarias, no encuentra ninguna solución.
+
+test4:
+Igual que test2, pero ambos aviones realizan 3 mantenimientos. 24 soluciones. Tiene sentido, es más restrictivo.

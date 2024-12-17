@@ -1,5 +1,6 @@
 from constraint import *
 import sys
+import random
 
 class CSP:
     def __init__(self, franjas, dimensiones, STD, SPC, PRK, aviones):
@@ -17,7 +18,7 @@ class CSP:
         for f in range(self.franjas):
             for avion in self.aviones:
                 variable = (avion, f)
-                self.problema.addVariable(variable, self.SPC+self.PRK+self.STD)
+                self.problema.addVariable(variable, self.PRK+self.STD+self.SPC)
                 self.variables.append(variable)
 
     def hasta_dos_aviones_en_taller(*res):
@@ -61,9 +62,7 @@ class CSP:
 
     def funcion_huecos_vacios(*res):
         #Guardamos todas las coordenadas ocupadas en una lista dentro de cada franja
-        for valor in res:
-            print(valor)
-        coordenadas_ocupadas = [(valor[0]) for valor in res]
+        coordenadas_ocupadas = [(valor[0]) for valor in res[1:]]
         #Por cada epacio ocupado comprobamos los espacios adyacentes
         for fila, columna in coordenadas_ocupadas:
             adyacentes = [
@@ -95,8 +94,8 @@ class CSP:
 
         # No puede haber más de dos aviones en un taller, ni dos JMB en el mismo
         for franja in variables_por_franja:
-            aviones_JMB = []
             self.problema.addConstraint(self.hasta_dos_aviones_en_taller, franja)
+            aviones_JMB = []
             for variable in franja:
                 if variable[0][1] == "JMB":
                     aviones_JMB.append(variable)
@@ -113,10 +112,10 @@ class CSP:
             self.problema.addConstraint(lambda *args, restr=avion[2], tareas_std=avion[3], tareas_spc=avion[4]: self.ordenar_tareas(args, restr, tareas_std, tareas_spc), mismo_avion)
         
 
-        #Los talleres y parkings con aviones asignados en una franja horaria deben tener 
+        # Los talleres y parkings con aviones asignados en una franja horaria deben tener 
         # vacíos al menos uno de los parkings o talleres de los adyacente vertical u horizontalmente
-        # for franja in variables_por_franja:
-        #     self.problema.addConstraint(self.funcion_huecos_vacios, franja)
+        for franja in variables_por_franja:
+             self.problema.addConstraint(self.funcion_huecos_vacios, franja)
 
         # No puede haber dos talleres adyacentes con avión JMB
         for franja in variables_por_franja:
@@ -129,7 +128,7 @@ class CSP:
     def realizar_problema(self):
         self.add_variables()
         self.add_restrictions()
-        return self.problema.getSolution()
+        return self.problema.getSolutions()
 
 def leer_archivo(path):
     archivo = open(path, 'r')
@@ -156,15 +155,36 @@ def leer_archivo(path):
         aviones.append((int(fila[0]), str(fila[2:5]), str(fila[6]), int(fila[8]), int(fila[10])))
     return franjas, dimensiones, STD, SPC, PRK, aviones
 
+def escribir_archivo(path, soluciones):
+    archivo = open(path, "w")
+    archivo.write("N. Sol: "+str(len(soluciones))+"\n")
+    if len(soluciones) == 0:
+        archivo.write("No se ha encontrado ninguna solución.")
+        return 0
+    for i in range(3):
+        archivo.write("Solución "+str(i+1)+":")
+        sol = random.randint(0, len(soluciones)-1)
+        valores = {}
+        for linea in soluciones[sol]:
+            if linea[0] not in valores:
+                valores[linea[0]] = [soluciones[sol][linea]]
+            else:
+                valores[linea[0]].insert(linea[1], soluciones[sol][linea])
+        for valor in valores:
+            archivo.write("\n\t")
+            for subvalor in valor[:-1]:
+                archivo.write(str(subvalor)+"-")
+            archivo.write(str(valor[-1])+":")
+            for res in valores[valor]:
+                archivo.write(" "+res[1]+str(res[0]))
+        archivo.write("\n")
+    return 0
+
 def main():
     franjas, dimensiones, STD, SPC, PRK, aviones = leer_archivo(sys.argv[1])
     csp = CSP(franjas, dimensiones, STD, SPC, PRK, aviones)
-    solucion = csp.realizar_problema()
-    if not solucion:
-        print("No hay ninguna solucion")
-        return 0
-    for llave in solucion:
-        print(llave, solucion[llave])
+    soluciones = csp.realizar_problema()
+    escribir_archivo(sys.argv[2], soluciones)
 
 if __name__ == "__main__":
     main()
