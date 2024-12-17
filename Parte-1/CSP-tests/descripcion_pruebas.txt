@@ -12,3 +12,17 @@ Igual que test2, pero con un avión teniendo que realizar 4 mantenimientos. Como
 
 test4:
 Igual que test2, pero ambos aviones realizan 3 mantenimientos. 24 soluciones. Tiene sentido, es más restrictivo.
+
+test5:
+Igual que test4, pero un avión tiene la opción T. 4 soluciones, ya que es incluso más restrictivo que el anterior.
+
+test6:
+Igual que test5, pero ambos tienen la opción T. En el primer avión, he quitado mantenimientos de tipo 1 porque sino no habría solución.
+Hay 4 soluciones, y todas tienen en la tercera franja el valor SPC(1,1) para el avión 1. Tiene sentido.
+
+test7:
+Igual que test4, pero con 4 franjas horarias y 2 aviones más STD. 96040 soluciones.
+
+
+Para la memoria, hay que decir que todos los aviones cubren los mantenimientos SPC, pero no tienen por qué cubrir los mantenimientos STD.
+Esto es porque en el enunciado no especificaba que deben realizarse los mantenimientos STD obligatoriamente, y por tanto no lo tenemos en cuenta.
