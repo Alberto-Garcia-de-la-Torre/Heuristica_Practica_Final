@@ -1,0 +1,2 @@
+Tiempo total: 0.0s
+Makespan: 2

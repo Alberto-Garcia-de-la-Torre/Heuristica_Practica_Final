@@ -1,0 +1,6 @@
+
+B,B,0,B,
+B,G,G,G,
+A,B,G,G,
+A,A,B,1,Tiempo total: 0.0s
+Makespan: 2
