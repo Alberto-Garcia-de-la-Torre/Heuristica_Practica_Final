@@ -37,7 +37,7 @@ class ASTAR:
         return [[pos[0], pos[1]-1], [pos[0], pos[1]+1], [pos[0]-1, pos[1]], [pos[0]+1, pos[1]]]
     
     def in_matriz(self, pos):
-        return pos[0] < self.dimensiones[0] and pos[1] < self.dimensiones[1]
+        return pos[0] < self.dimensiones[0] and pos[1] < self.dimensiones[1] and pos[0] >= 0 and pos[1] >= 0
     
     def calcular_valores(self, inicio, tipo):
         # -------------------------------------------------------------------------------- Cambiar para cuando acepte casillas amarillas
@@ -51,18 +51,26 @@ class ASTAR:
         # Resetear valor inicial
         matriz[inicio[0]][inicio[1]] = 0
         # Calcular adyacentes
+        coste = 0
+        futuras_posiciones = []
         for ady in self.adyacentes(inicio):
             if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G":
-                matriz[ady[0]][ady[1]] = 1
-                self._calcular_valores(ady, matriz)
+                futuras_posiciones.append(ady)
+        self._calcular_valores(futuras_posiciones, matriz, coste)
 
     
-    def _calcular_valores(self, pos, matriz):
-        print(pos, matriz)
-        # for ady in self.adyacentes(pos):
-        #     if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G":
-        #         matriz[ady[0]][ady[1]] = 1
-        #         self._calcular_valores(ady, matriz)
+    def _calcular_valores(self, posiciones, matriz, coste):
+        coste += 1
+        futuras_posiciones = []
+        for pos in posiciones:
+            # Cambiar valor actual de las posiciones
+            matriz[pos[0]][pos[1]] = coste
+            # Calcular futuras posiciones
+            for ady in self.adyacentes(pos):
+                if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G" and ady not in futuras_posiciones and coste < matriz[ady[0]][ady[1]]:
+                    futuras_posiciones.append(ady)
+        if len(futuras_posiciones) > 0:
+            self._calcular_valores(futuras_posiciones, matriz, coste)
     
     def ejecutar_algoritmo(self):
         # Calcular matriz g
