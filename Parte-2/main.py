@@ -108,6 +108,9 @@ class ASTAR:
     def utilizar_heruristica(self, matriz: list):
         menor_coste = float('inf')
         ganador = None
+        posibles_posiciones = self.adyacentes(self.inicio)
+        if self.matriz_original[self.inicio[0]][self.inicio[1]] != "A":
+            posibles_posiciones.append(self.inicio)
         # if self.final == [0,5]:
         #     print("--------------------------")
         #     print(self.inicio)
@@ -133,13 +136,13 @@ class ASTAR:
                 ganador = self.inicio
                 menor_coste = coste
         elif self.heuristica == 2:
-            for ady in self.adyacentes(self.inicio) + [self.inicio]:
-                if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "GG":
+            for ady in posibles_posiciones:
+                if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "GG" and ady not in self.posiciones_prohibidas:
                     coste = matriz[ady[0]][ady[1]] + self.matriz_costes[ady[0]][ady[1]]
-                    # if self.final == [0,5] and ady not in self.posiciones_prohibidas:
+                    # if self.final == [0,5]:
                     #     print(self.matriz_costes[ady[0]][ady[1]])
                     #     print(str(ady)+": "+str(matriz[ady[0]][ady[1]])+" + "+str(self.matriz_costes[ady[0]][ady[1]])+" = "+str(coste))
-                    if int(coste) < menor_coste and ady not in self.posiciones_prohibidas:
+                    if int(coste) < menor_coste:
                         ganador = ady
                         menor_coste = coste
         return ganador
@@ -182,8 +185,8 @@ def realizar_problema(aviones, matriz, heuristica):
                 matriz_costes[avion][linea].append(0)
     total_nodos = 0
 
-    while posiciones_actuales != posiciones_finales:
-    # for x in range(20):
+    while posiciones_actuales != posiciones_finales and len(configuraciones) < 1000:
+    # for x in range(1000):
         copia_anteriores = copy.deepcopy(posiciones_anteriores)
         copia_actuales = copy.deepcopy(posiciones_actuales)
         nuevos = [] # Evitar que dos aviones se muevan a la misma posición
@@ -199,7 +202,7 @@ def realizar_problema(aviones, matriz, heuristica):
                 posiciones_actuales[avion] = siguiente_movimiento
                 nuevos.append(siguiente_movimiento)
                 configuraciones[-1].append([copia_actuales[avion], siguiente_movimiento])
-                matriz_costes[avion][copia_actuales[avion][0]][copia_actuales[avion][1]] += 3
+                matriz_costes[avion][copia_actuales[avion][0]][copia_actuales[avion][1]] += 1
                 total_nodos += nodos
             else:
                 # Si ya ha llegado a la casilla final, esperar en el sitio
