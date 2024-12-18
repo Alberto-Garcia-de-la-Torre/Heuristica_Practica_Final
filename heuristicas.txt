@@ -1,0 +1,10 @@
+Heurística 1:
+Mira la lista de configuraciones, que son las coordenadas actuales de cada avión junto a la inmediatamente anterior.
+Si la última configuración (la actual) es igual a otra anterior, entonces el programa escoge un nuevo movimiento al azar de entre los posibles.
+De esta manera, si existe una solución, el programa terminará encontrándola. Es un poco tosco.
+
+Heurística 2:
+Cada vez que un avión pasa por una casilla, esa casilla tendrá un coste extra.
+De esta manera, los aviones intentan no repetir mismas configuraciones y prueban opciones distintas.
+Es más elegante y eficiente, pero no estoy seguro de que siempre sea capaz de encontrar una solución.
+Creo que podría llegar a entrar en un bucle, pero no he tenido ese resultado de momento.
