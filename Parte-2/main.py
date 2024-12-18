@@ -1,6 +1,7 @@
 import sys
 import copy
 import time
+import random
 
 
 def leer_archivo(path):
@@ -50,10 +51,11 @@ def escribir_archivo(path, movimientos, matriz, tiempo):
         time.sleep(0.5)
 
 class ASTAR:
-    def __init__(self, inicio, final, posiciones_prohibidas, matriz):
+    def __init__(self, inicio, final, posiciones_prohibidas, posicion_repetida, matriz):
         self.inicio = inicio
         self.final = final
         self.posiciones_prohibidas = posiciones_prohibidas
+        self.posicion_repetida = posicion_repetida
         self.matriz_original = matriz
         self.dimensiones = [len(matriz), len(matriz[0])]
 
@@ -99,6 +101,16 @@ class ASTAR:
             self._calcular_costes(futuras_posiciones, matriz, coste)
     
     def ejecutar_algoritmo(self):
+        # Comprobar si se ha repetido la posición
+        if self.posicion_repetida:
+            posiciones = self.adyacentes(self.inicio) + [self.inicio]
+            posiciones_filtradas = []
+            for pos in posiciones:
+                if self.in_matriz(pos) and self.matriz_original[pos[0]][pos[1]] != "G" and pos not in self.posiciones_prohibidas:
+                    posiciones_filtradas.append(pos)
+            return posiciones_filtradas[random.randint(0, len(posiciones_filtradas)-1)]
+
+
         # Calcular matriz g
         matriz_g = self.calcular_costes(self.inicio)
         # Calcular matriz h
@@ -112,7 +124,6 @@ class ASTAR:
                 # matriz_f[fila][columna] = matriz_f[fila][columna][0]
         menor_coste = float('inf')
         ganador = None
-        print(matriz_f)
         # Escoger futura posicion
         for ady in self.adyacentes(self.inicio):
             if self.in_matriz(ady):
@@ -125,8 +136,6 @@ class ASTAR:
         if int(coste) < menor_coste:
             ganador = self.inicio
             menor_coste = coste
-        print("Ganador: ", menor_coste, ganador)
-        print("Objetivo:", matriz_f[self.inicio[0]][self.inicio[1]])
         return ganador
 
 
@@ -141,27 +150,33 @@ def realizar_problema(aviones, matriz):
     for i in range(len(aviones)):
         posiciones_finales.append(aviones[i][1])
     posiciones_anteriores = copy.deepcopy(posiciones_actuales)
+    configuraciones = [] # Comprobar si se repite la misma posición dos veces
+    posicion_repetida = False
 
-    # while posiciones_actuales != posiciones_finales:
-    for x in range(10):
+    while posiciones_actuales != posiciones_finales:
+    # for x in range(10):
         copia_anteriores = copy.deepcopy(posiciones_anteriores)
         copia_actuales = copy.deepcopy(posiciones_actuales)
         nuevos = [] # Evitar que dos aviones se muevan a la misma posición
+        configuraciones.append([])
         for i in range(len(aviones)):
             posiciones_anteriores[i] = posiciones_actuales[i]
             if posiciones_actuales[i] != posiciones_finales[i]:
                 posiciones_prohibidas = copia_anteriores[:i] + copia_anteriores[i+1:] + copia_actuales[:i] + copia_actuales[i+1:] + nuevos
-                print("Posiciones prohibidas:", posiciones_prohibidas)
-                astar = ASTAR(posiciones_actuales[i], posiciones_finales[i], posiciones_prohibidas,  matriz)
+                astar = ASTAR(posiciones_actuales[i], posiciones_finales[i], posiciones_prohibidas, posicion_repetida,  matriz)
                 siguiente_movimiento = astar.ejecutar_algoritmo()
+                # Actualizar posiciones
                 movimientos[i].append(siguiente_movimiento)
                 posiciones_actuales[i] = siguiente_movimiento
                 nuevos.append(siguiente_movimiento)
+                configuraciones[-1].append([copia_actuales[i], siguiente_movimiento])
             else:
                 # Si ya ha llegado a la casilla final, esperar en el sitio
                 movimientos[i].append(movimientos[i][-1])
-        print("Anteriores:           ", posiciones_anteriores)
-        print("Actuales:             ", posiciones_actuales)
+        if configuraciones[-1] in configuraciones[:-1]:
+            posicion_repetida = True
+        else:
+            posicion_repetida = False
     return movimientos
 
         
