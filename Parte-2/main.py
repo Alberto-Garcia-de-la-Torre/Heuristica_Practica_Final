@@ -20,17 +20,25 @@ def leer_archivo(path):
 
 def escribir_archivo(path, movimientos, matriz, tiempo):
     archivo = open(path, "w")
+    archivo.write("Tiempo total: "+str(tiempo//1000)+"s\n")
+    archivo.write("Makespan: "+str(len(movimientos)))
     for movimiento in range(len(movimientos[0])):
         output = []
-        archivo.write("Tiempo total: "+str(tiempo//1000)+"s\n")
-        archivo.write("Makespan: "+str(len(movimientos)))
+        
 
 
 
         for linea in range(len(matriz)):
             output.append([])
             for columna in range(len(matriz[0])):
-                output[linea].append(matriz[linea][columna])
+                valor = matriz[linea][columna]
+                if valor == "G":
+                    valor = "X"
+                elif valor == "B":
+                    valor = "-"
+                elif valor == "A":
+                    valor = "+"
+                output[linea].append(valor)
         for x in range(len(movimientos)):
             output[movimientos[x][movimiento][0]][movimientos[x][movimiento][1]] = str(x)
         archivo = open("animacion_"+path, "w")
@@ -38,6 +46,7 @@ def escribir_archivo(path, movimientos, matriz, tiempo):
             archivo.write("\n")
             for valor in linea:
                 archivo.write(valor+",")
+        archivo.write("\n\nMovimiento: "+str(movimiento))
         time.sleep(0.5)
 
 class ASTAR:
@@ -133,19 +142,21 @@ def realizar_problema(aviones, matriz):
         posiciones_finales.append(aviones[i][1])
     posiciones_anteriores = copy.deepcopy(posiciones_actuales)
 
-    while posiciones_actuales != posiciones_finales:
-    # for x in range(10):
+    # while posiciones_actuales != posiciones_finales:
+    for x in range(10):
         copia_anteriores = copy.deepcopy(posiciones_anteriores)
         copia_actuales = copy.deepcopy(posiciones_actuales)
+        nuevos = [] # Evitar que dos aviones se muevan a la misma posición
         for i in range(len(aviones)):
             posiciones_anteriores[i] = posiciones_actuales[i]
             if posiciones_actuales[i] != posiciones_finales[i]:
-                posiciones_prohibidas = copia_anteriores[:i] + copia_anteriores[i+1:] + copia_actuales[:i] + copia_actuales[i+1:]
+                posiciones_prohibidas = copia_anteriores[:i] + copia_anteriores[i+1:] + copia_actuales[:i] + copia_actuales[i+1:] + nuevos
                 print("Posiciones prohibidas:", posiciones_prohibidas)
                 astar = ASTAR(posiciones_actuales[i], posiciones_finales[i], posiciones_prohibidas,  matriz)
                 siguiente_movimiento = astar.ejecutar_algoritmo()
                 movimientos[i].append(siguiente_movimiento)
                 posiciones_actuales[i] = siguiente_movimiento
+                nuevos.append(siguiente_movimiento)
             else:
                 # Si ya ha llegado a la casilla final, esperar en el sitio
                 movimientos[i].append(movimientos[i][-1])

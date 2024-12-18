@@ -1,6 +1,8 @@
 
-B,B,0,B,
-B,G,G,G,
-A,B,G,G,
-A,A,B,1,Tiempo total: 0.0s
-Makespan: 2
+-,-,-,-,X,-,
+-,X,-,X,-,-,
++,-,-,X,-,X,
++,+,-,0,1,-,
+-,X,-,-,X,-,
+
+Movimiento: 10
