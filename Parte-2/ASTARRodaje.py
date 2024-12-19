@@ -78,7 +78,6 @@ class ASTAR:
         return pos[0] < self.dimensiones[0] and pos[1] < self.dimensiones[1] and pos[0] >= 0 and pos[1] >= 0
     
     def calcular_costes(self, inicio):
-        # -------------------------------------------------------------------------------- Cambiar para cuando acepte casillas amarillas
         matriz = self.resetear_matriz(copy.deepcopy(self.matriz_original))
         # Resetear valor inicial
         matriz[inicio[0]][inicio[1]] = 0
