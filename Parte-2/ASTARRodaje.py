@@ -204,7 +204,7 @@ def realizar_problema(aviones, matriz, heuristica):
                 posiciones_actuales[avion] = siguiente_movimiento
                 nuevos.append(siguiente_movimiento)
                 configuraciones[-1].append([copia_actuales[avion], siguiente_movimiento])
-                matriz_costes[avion][copia_actuales[avion][0]][copia_actuales[avion][1]] += 3
+                matriz_costes[avion][copia_actuales[avion][0]][copia_actuales[avion][1]] += 1
                 total_nodos += nodos
             else:
                 # Si ya ha llegado a la casilla final, esperar en el sitio
