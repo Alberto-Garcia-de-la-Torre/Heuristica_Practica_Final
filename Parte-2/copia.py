@@ -80,7 +80,7 @@ class ASTAR:
         self.caminos_anteriores = []
     
     def resetear_variables(self):
-        self.caminos_anteriores.append(copy.deepcopy(self.camino_optimo))
+        self.caminos_anteriores.append(copy.deepcopy(self.camino))
         self.pos_actual = copy.deepcopy(self.pos_inicial)
         self.nodos_abiertos = []
         self.nodos_cerrados = [[]]
@@ -167,9 +167,9 @@ class ASTAR:
         return coste
     
     def realizar_iteracion(self)->int:
-        profundidad = 0
         menor_coste = float('inf')
-        while menor_coste != 0 and profundidad < self.prof_max:
+        # while menor_coste != 0 and len(self.camino) < self.prof_max:
+        while len(self.camino) > 0:
             # Abrir nuevos nodos
             self.nodos_abiertos = self.buscar_nodos(self.pos_actual)
             # Ver cuál es el nodo con menor coste
@@ -178,49 +178,84 @@ class ASTAR:
             for nodo in self.nodos_abiertos:
                 pos = nodo[1]
                 coste_nodo = self.calcular_coste(pos)
+                # if profundidad == self.prof_max-1:
+                #     self.nodos_cerrados.append(nodo)
                 if coste_nodo < menor_coste and nodo not in self.nodos_cerrados:
+                    # print(nodo, self.prof_max, profundidad)
                     menor_coste = coste_nodo
                     nodo_ganador = tuple(nodo)
                     self.pos_actual = tuple(pos)
             if nodo_ganador:
                 self.camino.append(self.pos_actual)
-                # Comprobar si este camino ya se ha recorrido
-                if self.camino in self.caminos_anteriores:
-                    self.camino.pop()
-                    profundidad -= 1
-                else:
-                    self.configuraciones.append(nodo_ganador)
-                    profundidad += 1
+                self.configuraciones.append(nodo_ganador)
                 self.nodos_cerrados.append(nodo_ganador)
+
+
+
+
+
+
+
+
+
+                # self.camino.append(self.pos_actual)
+                # # Comprobar si este camino ya se ha recorrido
+                # if self.camino in self.caminos_anteriores:
+                #     print("Repe")
+                #     self.camino.pop()
+                #     self.pos_actual = self.camino[-1]
+                # else:
+                #     self.configuraciones.append(nodo_ganador)
+                # self.nodos_cerrados.append(nodo_ganador)
             if not nodo_ganador:
-                # profundidad -= 1
-                # self.camino.pop()
-                if len(self.camino) == 0:
-                    return -1
-                self.pos_actual = self.camino[-1]
+                if len(self.camino) == 1:
+                    return 0
+                self.camino.pop()
+                self.pos_actual = copy.deepcopy(self.camino[-1])
                 self.configuraciones.pop()
-                nodo_ganador = self.configuraciones[-1]
-        # print("Camino:")
-        # for movimiento in self.camino:
-        #     print(movimiento)
-        # print("Nodos abiertos:")
-        # for nodo in self.nodos_abiertos:
-        #     print(nodo)
-        # print("Nodos cerrados:")
-        # for nodo in self.nodos_cerrados:
-        #     print(nodo)
+                # print(len(self.camino), len(self.configuraciones))
+                # print(self.camino[-1])
+                # print(self.configuraciones[-1])
+                nodo_ganador = copy.deepcopy(self.configuraciones[-1])
+
+
+
+
+
+
+
+
+
+
+
+                # print("No hay nodo ganador")
+                # self.camino.pop()
+                # if len(self.camino) == 0:
+                #     return -1
+                # self.pos_actual = self.camino[-1]
+                # self.configuraciones.pop()
+                # nodo_ganador = self.configuraciones[-1]
+            if menor_coste == 0 and (len(self.camino) < len(self.camino_optimo) or len(self.camino_optimo) == 0):
+                print("Camino:")
+                print(self.camino)
+                self.camino_optimo = copy.deepcopy(self.camino)
         return 0
     
     def ejecutar_algoritmo(self):
         # contador = 0
-        # while True:
+        # while len(self.camino) != len(self.camino_optimo):
+        # for i in range(10):
             res = self.realizar_iteracion()
-            self.camino_optimo = copy.deepcopy(self.camino)
-            self.prof_max = len(self.camino_optimo)
-            self.resetear_variables()
+            # if len(self.camino) < len(self.camino_optimo) or len(self.camino_optimo) == 0:
+            #     self.camino_optimo = copy.deepcopy(self.camino)
+            # self.prof_max = len(self.camino_optimo)
+            # self.resetear_variables()
             # contador += 1
-            # if res:
-            #     return self.camino_optimo
+            print(len(self.camino_optimo))
+            print(self.camino_optimo)
+            if res:
+                return self.caminos_anteriores[-1]
+            # return self.camino_optimo
             return self.camino_optimo
         
 
