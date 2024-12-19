@@ -156,7 +156,7 @@ def leer_archivo(path):
     return franjas, dimensiones, STD, SPC, PRK, aviones
 
 def escribir_archivo(path, soluciones):
-    archivo = open(path, "w")
+    archivo = open(path+".csv", "w")
     archivo.write("N. Sol: "+str(len(soluciones))+"\n")
     if len(soluciones) == 0:
         archivo.write("No se ha encontrado ninguna solución.")
@@ -181,10 +181,11 @@ def escribir_archivo(path, soluciones):
     return 0
 
 def main():
-    franjas, dimensiones, STD, SPC, PRK, aviones = leer_archivo(sys.argv[1])
+    path_entrada = sys.argv[1]
+    franjas, dimensiones, STD, SPC, PRK, aviones = leer_archivo(path_entrada)
     csp = CSP(franjas, dimensiones, STD, SPC, PRK, aviones)
     soluciones = csp.realizar_problema()
-    escribir_archivo(sys.argv[2], soluciones)
+    escribir_archivo(path_entrada, soluciones)
 
 if __name__ == "__main__":
     main()

@@ -45,7 +45,7 @@ def escribir_archivo(path, movimientos, nodos, matriz, tiempo):
             archivo.write("\n")
             for valor in linea:
                 archivo.write(valor+",")
-        archivo.write("\n\nMovimiento: "+str(movimiento)+"/"+str(len(movimientos[0])-1))
+        archivo.write("\n\nMovimiento: "+str(movimiento)+"/"+str(len(movimientos)-1))
         archivo.close()
         time.sleep(0.5)
 
@@ -54,7 +54,8 @@ class ASTAR:
         self.heuristica = heuristica
         self.nodo_actual = inicio
         self.nodo_anterior = inicio
-        self.nodo_final = str(tuple(final))
+        self.nodo_final = tuple(final)
+        self.posiciones_prohibidas = []
         self.configuraciones = [[]]
         for pos in inicio:
             self.configuraciones[0].append([pos, pos])
@@ -72,8 +73,8 @@ class ASTAR:
         # Crear matriz heurística por cada avión
         # ---------------------------------------------------------------------------- Cambiarlo para cuando implemente dos heurísticas distintas ------------------------
         self.matrices_h = []
-        for pos in final:
-            self.matrices_h.append(self.generar_matriz_h(pos))
+        # for pos in final:
+        #     self.matrices_h.append(self.generar_matriz_h(pos))
         self.nodos_abiertos = []
         self.nodos_cerrados = []
         self.camino = [tuple(inicio)]
@@ -91,12 +92,12 @@ class ASTAR:
     
     def casillas_posibles(self, pos):
         lista = [[pos[0], pos[1]-1], [pos[0], pos[1]+1], [pos[0]-1, pos[1]], [pos[0]+1, pos[1]]]
-        if pos not in self.casillas_amarillas:
-            lista.append(pos)
         lista_filtrada = []
-        for valor in lista:
-            if self.in_matriz(valor) and valor not in self.obstaculos:
-                lista_filtrada.append(valor)
+        for valor in range(len(lista)):
+            if self.in_matriz(lista[valor]) and lista[valor] not in self.obstaculos and lista[valor] not in self.nodo_actual[:valor]+self.nodo_actual[valor:]:
+                lista_filtrada.append(lista[valor])
+        if pos not in self.casillas_amarillas:
+            lista_filtrada.append(pos)
         return lista_filtrada
     
     def in_matriz(self, pos):
@@ -112,31 +113,40 @@ class ASTAR:
         ]
         return total_nodos
     
-    def generar_matriz_h(self, pos):
+    def generar_matriz_h(self, pos_inicial, pos_final):
+        print("Nodo actual:", self.nodo_actual, pos_final)
         matriz = self.resetear_matriz(copy.deepcopy(self.matriz_original))
+        otros_aviones = []
+        for avion in self.nodo_actual:
+            if avion != pos_inicial:
+                otros_aviones.append(avion)
         # Resetear valor inicial
-        matriz[pos[0]][pos[1]] = 0
+        matriz[pos_final[0]][pos_final[1]] = 0
         # Calcular adyacentes
         coste = 0
         futuras_posiciones = []
-        for ady in self.adyacentes(pos):
+        for ady in self.adyacentes(pos_final):
             if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G":
                 futuras_posiciones.append(ady)
-        self._generar_matriz_h(futuras_posiciones, matriz, coste)
+        self._generar_matriz_h(futuras_posiciones, matriz, coste, otros_aviones)
+        for linea in matriz:
+            print(linea)
         return matriz
     
-    def _generar_matriz_h(self, posiciones, matriz, coste):
+    def _generar_matriz_h(self, posiciones, matriz, coste, otros_aviones):
         coste += 1
         futuras_posiciones = []
         for pos in posiciones:
             # Cambiar valor actual de las posiciones
+            if pos in otros_aviones:
+                coste += 1000
             matriz[pos[0]][pos[1]] = coste
             # Calcular futuras posiciones
             for ady in self.adyacentes(pos):
                 if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G" and ady not in futuras_posiciones and coste < matriz[ady[0]][ady[1]]:
                     futuras_posiciones.append(ady)
         if len(futuras_posiciones) > 0:
-            self._generar_matriz_h(futuras_posiciones, matriz, coste)
+            self._generar_matriz_h(futuras_posiciones, matriz, coste, otros_aviones)
 
     def calcular_coste(self, nodo):
         # ----------------------------------------- El coste solo es calculado con la heuristica, es posible tener que añadir la matriz g ------------------------------------------------------------------
@@ -147,10 +157,14 @@ class ASTAR:
     
     def ejecutar_algoritmo(self):
         menor_coste = float('inf')
-        while menor_coste != 0:
+        while menor_coste != 0 and len(self.camino) < 1000:
         # for i in range(1):
             # Abrir nuevos nodos
             self.nodos_abiertos.append(self.buscar_nodos(self.nodo_actual))
+            # Ejecutar heuristica
+            self.matrices_h = []
+            for pos in range(len(self.nodo_final)):
+                self.matrices_h.append(self.generar_matriz_h(self.nodo_actual[pos], self.nodo_final[pos]))
             # Ver cuál es el nodo con menor coste
             menor_coste = float('inf')
             for nodo in self.nodos_abiertos[-1]:
