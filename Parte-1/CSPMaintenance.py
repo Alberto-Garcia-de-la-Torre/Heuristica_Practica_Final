@@ -2,6 +2,7 @@ from constraint import *
 import sys
 import random
 
+# La clase CSP es la encargada de realizar cualquier acción relacionada con Python Constraint
 class CSP:
     def __init__(self, franjas, dimensiones, STD, SPC, PRK, aviones):
         self.franjas = franjas
@@ -14,6 +15,7 @@ class CSP:
         self.total = 0
 
     def add_variables(self):
+        # Añade las variables de los aviones junto al dominio que tienen, el cual es toda la matriz
         self.variables = []
         for f in range(self.franjas):
             for avion in self.aviones:
@@ -42,6 +44,7 @@ class CSP:
         return True
     
     def contar_SPC(self, variables):
+        # Cuenta el total de talleres SPC tiene asignado el avión
         total_SPC = 0
         for variable in variables:
             if variable[1] == "SPC":
@@ -49,12 +52,14 @@ class CSP:
         return total_SPC
     
     def ordenar_tareas(self, variables, restr, tareas_std, tareas_spc):
+        # Asegura que haga primero las tareas SPC en caso de tenerlas
         if restr == "F":
             return True
         for variable in variables:
             if tareas_spc > 0:
                 if variable[1] == "SPC":
                     tareas_spc -= 1
+            # No comprueba las tareas STD si aún le quedan SPC
             elif tareas_std > 0:
                 if variable[1] == "STD":
                     tareas_std -= 1
@@ -86,6 +91,10 @@ class CSP:
         return True
 
     def add_restrictions(self):
+        # No hace falta hacer restricción para que cada variable tenga asignada un solo valor
+        # Python Constraint ya asegura que cada variable tendrá en único valor
+
+        # Lista para separar los aviones por la franja horaria a la que pertenecen
         variables_por_franja = []
         for franja in range(self.franjas):
             variables_por_franja.append([])
@@ -126,6 +135,7 @@ class CSP:
                             self.problema.addConstraint(lambda a,b: abs(a[0][0]-b[0][0])+abs(a[0][1]-b[0][1]) > 1, (variable, otra_variable))
 
     def realizar_problema(self):
+        # Función para controlar el flujo de las acciones
         self.add_variables()
         self.add_restrictions()
         return self.problema.getSolutions()
@@ -182,9 +192,12 @@ def escribir_archivo(path, soluciones):
 
 def main():
     path_entrada = sys.argv[1]
+    # Leer el archivo de entrada
     franjas, dimensiones, STD, SPC, PRK, aviones = leer_archivo(path_entrada)
+    # Definir la clase CSP y ejecutarla
     csp = CSP(franjas, dimensiones, STD, SPC, PRK, aviones)
     soluciones = csp.realizar_problema()
+    # Escribir en el archivo de salida
     escribir_archivo(path_entrada, soluciones)
 
 if __name__ == "__main__":
