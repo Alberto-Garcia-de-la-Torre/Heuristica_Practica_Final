@@ -1,0 +1,12 @@
+Heurística 1:
+incr->      1       2       3
+- mapa00:   10      10      10
+- mapa01:   3       3       3
+- mapa02:   7       7       7
+- mapa03:   20      17      17
+- mapa04:   59      34      24
+- mapa05:   12      16      16
+- mapa06:   12      10      10
+- mapa07:   
+- mapa08:
+- mapa09:   68

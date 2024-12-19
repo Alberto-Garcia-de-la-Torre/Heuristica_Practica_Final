@@ -1,2 +1,3 @@
 Tiempo total: 0.0s
-Makespan: 10
+Makespan: 68
+Nodos: 1876
