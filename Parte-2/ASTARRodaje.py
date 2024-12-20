@@ -20,7 +20,7 @@ def leer_archivo(path):
         matriz[-1][-1] = matriz[-1][-1][0] # Quitar \n
     return aviones, matriz
 
-def escribir_archivo(path, movimientos, nodos, matriz, tiempo, heuristica):
+def escribir_archivo(path, movimientos, nodos, h_inicial, matriz, tiempo, heuristica):
     inicio_path = path[:-4]
     archivo = open(inicio_path+"-"+heuristica+".output", "w")
     archivo = open(inicio_path+"-"+heuristica+".output", "a")
@@ -52,6 +52,7 @@ def escribir_archivo(path, movimientos, nodos, matriz, tiempo, heuristica):
     archivo = open(inicio_path+"-"+heuristica+".stat", "w")
     archivo.write("Tiempo total: "+str(tiempo//1000)+"s")
     archivo.write("\nMakespan: "+str(len(movimientos)-1))
+    archivo.write("\nH inicial: "+str(h_inicial))
     archivo.write("\nNodos: "+str(nodos))
     archivo.close()
     for movimiento in range(len(movimientos)):
@@ -118,6 +119,7 @@ class ASTAR:
         self.nodos_camino = copy.deepcopy(self.nodos_cerrados)
         self.total_nodos = 0
         self.avion_actual = None
+        self.h_inicial = None
     
     def resetear_variables(self):
         self.caminos_anteriores.append(copy.deepcopy(self.camino))
@@ -230,6 +232,8 @@ class ASTAR:
                     else:
                         pass
                 if nodo_ganador:
+                    if self.h_inicial == None:
+                        self.h_inicial = coste_nodo
                     self.camino.append(self.pos_actual)
                     self.nodos_camino.append(nodo_ganador)
                     self.configuraciones.append(nodo_ganador)
@@ -239,7 +243,7 @@ class ASTAR:
                         self.matrices[avion][self.pos_actual[avion][0]][self.pos_actual[avion][1]] += 1
                 if not nodo_ganador:
                     if len(self.camino) == 1:
-                        return self.camino_optimo, self.total_nodos
+                        return self.camino_optimo, self.total_nodos, self.h_inicial
                     self.camino.pop()
                     self.nodos_camino.pop()
                     self.pos_actual = copy.deepcopy(self.camino[-1])
@@ -257,7 +261,7 @@ class ASTAR:
                 self.nodos_camino.pop()
                 self.configuraciones.pop()
                 self.pos_actual = copy.deepcopy(self.camino[-1])
-        return self.camino_optimo, self.total_nodos
+        return self.camino_optimo, self.total_nodos, self.h_inicial
 
 def realizar_problema(aviones, matriz, heuristica):
         inicio = []
@@ -266,15 +270,15 @@ def realizar_problema(aviones, matriz, heuristica):
             inicio.append(avion[0])
             final.append(avion[1])
         astar = ASTAR(heuristica, inicio, final, matriz)
-        camino, nodos = astar.ejecutar_algoritmo()
+        camino, nodos, h_inicial = astar.ejecutar_algoritmo()
 
-        return camino, nodos
+        return camino, nodos, h_inicial
 
 def main():
     aviones, matriz = leer_archivo(sys.argv[1])
     tiempo = time.time()
-    movimientos, nodos = realizar_problema(aviones, matriz, int(sys.argv[2]))
-    escribir_archivo(sys.argv[1], movimientos, nodos, matriz, time.time()-tiempo, str(sys.argv[2]))
+    movimientos, nodos, h_inicial = realizar_problema(aviones, matriz, int(sys.argv[2]))
+    escribir_archivo(sys.argv[1], movimientos, nodos, h_inicial, matriz, time.time()-tiempo, str(sys.argv[2]))
 
 if __name__ == "__main__":
     main()
