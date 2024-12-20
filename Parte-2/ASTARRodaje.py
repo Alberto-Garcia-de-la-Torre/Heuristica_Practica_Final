@@ -88,6 +88,13 @@ class ASTAR:
         self.matriz_original = matriz
         self.obstaculos = []
         self.casillas_amarillas = []
+        self.matrices = []
+        for avion in range(len(inicio)):
+            self.matrices.append([])
+            for linea in range(len(matriz)):
+                self.matrices[avion].append([])
+                for columna in range(len(matriz[0])):
+                    self.matrices[avion][linea].append(0)
         for linea in range(len(matriz)):
             for columna in range(len(matriz[0])):
                 if matriz[linea][columna] == "G":
@@ -96,7 +103,6 @@ class ASTAR:
                     self.casillas_amarillas.append((linea, columna))
         self.dimensiones = [len(matriz), len(matriz[0])]
         # Crear matriz heurística por cada avión
-        # ---------------------------------------------------------------------------- Cambiarlo para cuando implemente dos heurísticas distintas ------------------------
         self.nodos_abiertos = []
         self.nodos_cerrados = [[[], []]]
         for pos in inicio:
@@ -111,6 +117,7 @@ class ASTAR:
         self.nodos_prof_cerrados = [self.nodos_cerrados[0][0], self.nodos_cerrados[0][1], 1]
         self.nodos_camino = copy.deepcopy(self.nodos_cerrados)
         self.total_nodos = 0
+        self.avion_actual = None
     
     def resetear_variables(self):
         self.caminos_anteriores.append(copy.deepcopy(self.camino))
@@ -159,12 +166,15 @@ class ASTAR:
             total_nodos[pos] = (self.pos_actual, total_nodos[pos])
         return total_nodos
     
-    def generar_matriz_h(self, nodo_actual, pos_inicial, pos_final):
+    def aplicar_heuristica(self, pos):
+        if self.heuristica == 1:
+            pass
+        elif self.heuristica == 2:
+            return self.matrices[self.avion_actual][pos[0]][pos[1]]
+        return 0
+    
+    def generar_matriz_h(self, pos_final):
         matriz = self.resetear_matriz(copy.deepcopy(self.matriz_original))
-        otros_aviones = []
-        for avion in nodo_actual:
-            if avion != pos_inicial:
-                otros_aviones.append(avion)
         # Resetear valor inicial
         matriz[pos_final[0]][pos_final[1]] = 0
         # Calcular adyacentes
@@ -173,46 +183,36 @@ class ASTAR:
         for ady in self.adyacentes(pos_final):
             if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G":
                 futuras_posiciones.append(ady)
-        self._generar_matriz_h(futuras_posiciones, matriz, coste, otros_aviones)
+        self._generar_matriz_h(futuras_posiciones, matriz, coste)
         return matriz
     
-    def _generar_matriz_h(self, posiciones, matriz, coste, otros_aviones):
+    def _generar_matriz_h(self, posiciones, matriz, coste):
         coste += 1
         futuras_posiciones = []
         for pos in posiciones:
-            # Cambiar valor actual de las posiciones
-            # if pos in otros_aviones:
-            #     coste += 1000
+            # Aplicar heuristica
+            coste += self.aplicar_heuristica(pos)
             matriz[pos[0]][pos[1]] = coste
             # Calcular futuras posiciones
             for ady in self.adyacentes(pos):
                 if self.in_matriz(ady) and matriz[ady[0]][ady[1]] != "G" and ady not in futuras_posiciones and coste < matriz[ady[0]][ady[1]]:
                     futuras_posiciones.append(ady)
         if len(futuras_posiciones) > 0:
-            self._generar_matriz_h(futuras_posiciones, matriz, coste, otros_aviones)
+            self._generar_matriz_h(futuras_posiciones, matriz, coste)
 
     def calcular_coste(self, nodo):
-        # ----------------------------------------- El coste solo es calculado con la heuristica, es posible tener que añadir la matriz g ------------------------------------------------------------------
         coste = 0
         for pos in range(len(nodo)):
-            matriz_h = self.generar_matriz_h(nodo, nodo[pos], self.nodo_final[pos])
+            self.avion_actual = pos
+            matriz_h = self.generar_matriz_h(self.nodo_final[pos])
             coste += matriz_h[nodo[pos][0]][nodo[pos][1]]
         return coste
     
-    def escribir(self, text):
-        archivo = open("print.txt", "a")
-        archivo.write(f"\n")
-        for i in text:
-            archivo.write(str(i))
-    
     def ejecutar_algoritmo(self)->int:
         menor_coste = float('inf')
-        # while menor_coste != 0 and len(self.camino) < self.prof_max:
         while len(self.camino) > 0:
-        # for i in range(100):
             # Comprobar que el camino nuevo puede ser mejor que el optimo
             if len(self.camino) < self.prof_max:
-                # self.escribir(["Camino actual:", len(self.camino), self.camino])
                 # Abrir nuevos nodos
                 self.nodos_abiertos = self.buscar_nodos(self.pos_actual)
                 self.total_nodos += len(self.nodos_abiertos)
@@ -223,17 +223,11 @@ class ASTAR:
                     pos = nodo[1]
                     coste_nodo = self.calcular_coste(pos)
                     nodo_evaluable = (nodo[0], nodo[1], len(self.camino)+1)
-                    # if nodo == (((1, 1), (0, 1)), ((1, 1), (0, 0))):
-                    #     self.escribir("Coincidencia: "+str(coste_nodo < menor_coste)+" "+str(coste_nodo<self.prof_max)+" "+str(nodo not in self.nodos_cerrados)+" "+str(nodo_evaluable not in self.nodos_prof_cerrados)+" "+str((coste_nodo < menor_coste and coste_nodo<self.prof_max) and nodo not in self.nodos_cerrados))
-                    # self.escribir("Nodo distinto al anterior: "+str(nodo != self.configuraciones[-1]))
                     if coste_nodo < menor_coste and coste_nodo<self.prof_max and nodo_evaluable not in self.nodos_prof_cerrados and nodo not in self.nodos_camino:
-                        # self.escribir("Nodo aceptado: "+str(nodo))
-                        # print(nodo, self.prof_max, profundidad)
                         menor_coste = coste_nodo
                         nodo_ganador = tuple(nodo)
                         self.pos_actual = tuple(pos)
                     else:
-                        # self.escribir("Nodo denegado: "+str(nodo))
                         pass
                 if nodo_ganador:
                     self.camino.append(self.pos_actual)
@@ -241,24 +235,8 @@ class ASTAR:
                     self.configuraciones.append(nodo_ganador)
                     self.nodos_cerrados.append(nodo_ganador)
                     self.nodos_prof_cerrados.append((nodo_ganador[0], nodo_ganador[1], len(self.camino)))
-
-
-
-
-
-
-
-
-
-                    # self.camino.append(self.pos_actual)
-                    # # Comprobar si este camino ya se ha recorrido
-                    # if self.camino in self.caminos_anteriores:
-                    #     print("Repe")
-                    #     self.camino.pop()
-                    #     self.pos_actual = self.camino[-1]
-                    # else:
-                    #     self.configuraciones.append(nodo_ganador)
-                    # self.nodos_cerrados.append(nodo_ganador)
+                    for avion in range(len(self.pos_actual)):
+                        self.matrices[avion][self.pos_actual[avion][0]][self.pos_actual[avion][1]] += 1
                 if not nodo_ganador:
                     if len(self.camino) == 1:
                         return self.camino_optimo, self.total_nodos
@@ -266,32 +244,7 @@ class ASTAR:
                     self.nodos_camino.pop()
                     self.pos_actual = copy.deepcopy(self.camino[-1])
                     self.configuraciones.pop()
-                    # print(len(self.camino), len(self.configuraciones))
-                    # print(self.camino[-1])
-                    # print(self.configuraciones[-1])
-                    # nodo_ganador = copy.deepcopy(self.configuraciones[-1])
-
-
-
-
-
-
-
-
-
-
-
-                    # print("No hay nodo ganador")
-                    # self.camino.pop()
-                    # if len(self.camino) == 0:
-                    #     return -1
-                    # self.pos_actual = self.camino[-1]
-                    # self.configuraciones.pop()
-                    # nodo_ganador = self.configuraciones[-1]
                 elif menor_coste == 0 and (len(self.camino) < len(self.camino_optimo) or len(self.camino_optimo) == 0):
-                    # Comprobar pasos innecesarios
-                    # self.escribir("Configuraciones: "+str(self.configuraciones))
-
                     self.camino_optimo = copy.deepcopy(self.camino)
                     self.prof_max = len(self.camino_optimo)-1
                     self.camino.pop()
@@ -299,9 +252,6 @@ class ASTAR:
                     self.configuraciones.pop()
                     self.pos_actual = copy.deepcopy(self.camino[-1])
                     self.nodos_cerrados = [[]]
-                    # self.escribir("--------------------")
-                    self.escribir(["Camino optimo:", self.prof_max, self.camino_optimo])
-                    # print(self.nodos_cerrados)
             else:
                 self.camino.pop()
                 self.nodos_camino.pop()
@@ -319,9 +269,6 @@ def realizar_problema(aviones, matriz, heuristica):
         camino, nodos = astar.ejecutar_algoritmo()
 
         return camino, nodos
-    
-
-        
 
 def main():
     aviones, matriz = leer_archivo(sys.argv[1])
