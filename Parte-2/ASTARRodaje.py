@@ -50,7 +50,7 @@ def escribir_archivo(path, movimientos, nodos, h_inicial, matriz, tiempo, heuris
         archivo.write("\n")
     archivo.close()
     archivo = open(inicio_path+"-"+heuristica+".stat", "w")
-    archivo.write("Tiempo total: "+str(tiempo//1000)+"s")
+    archivo.write("Tiempo total: "+str(tiempo)+"s")
     archivo.write("\nMakespan: "+str(len(movimientos)-1))
     archivo.write("\nH inicial: "+str(h_inicial))
     archivo.write("\nNodos: "+str(nodos))
